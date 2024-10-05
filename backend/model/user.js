@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     required : true,
     
+  },
+  idno :{
+    type: String,
+    required : true,
   }
 });
 
