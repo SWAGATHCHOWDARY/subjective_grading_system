@@ -15,6 +15,8 @@ mongoose.connect('mongodb+srv://saiswagath:oXuYHolYF6ErPegd@cluster1.utkxd.mongo
     console.error('Error connecting to MongoDB Atlas:', error);
 });
 
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
 app.use('/', routes);
 
 app.get('/',(req,res) => {

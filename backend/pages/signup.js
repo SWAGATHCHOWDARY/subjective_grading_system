@@ -5,10 +5,17 @@ const bcrypt = require('bcryptjs');
 
 router.post('/', async (req, res) => {
   try {
-    console.log("I am here!");
-    const { Fullname, email, password,isteacher,idno } = req.body;
-    const existingUser = await User.findOne({ 'creds.email': email });
+    console.log("Processing registration request");
+    const { Fullname, email, password, isteacher, idno } = req.body;
 
+    // Validate input
+    if (!Fullname || !email || !password || isteacher === undefined || !idno) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    // Check if user already exists
+    console.log(email)
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
@@ -16,20 +23,25 @@ router.post('/', async (req, res) => {
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    console.log(email,hashedPassword);
+
+    // Create new user
     const newUser = new User({
       Fullname,
-      creds: {
-        email,
-        password: hashedPassword,
-      },
-
+      email,
+      hashedpassword: hashedPassword, // Note the change from 'password' to 'hashedpassword'
+      isteacher,
+      idno
     });
 
+    // Save the user
     await newUser.save();
+
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     console.error('Error during user registration:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'Duplicate key error. Email or ID might already exist.' });
+    }
     res.status(500).json({ message: 'Internal server error' });
   }
 });
