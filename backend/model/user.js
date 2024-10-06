@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
   isteacher: {
     type: Boolean,
     required: true,
+    default: false, 
   },
   idno: {
     type: String,

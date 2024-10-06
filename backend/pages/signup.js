@@ -3,13 +3,14 @@ const router = express.Router();
 const User = require('../model/user');
 const bcrypt = require('bcryptjs');
 
+const SECRET_CODE = "95430";
+ 
 router.post('/', async (req, res) => {
   try {
     console.log("Processing registration request");
-    const { Fullname, email, password, isteacher, idno } = req.body;
+    const { Fullname, email, password, isteacher, idno, secretcode } = req.body;
 
-    // Validate input
-    if (!Fullname || !email || !password || isteacher === undefined || !idno) {
+    if (!Fullname || !email || !password || !idno) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -20,6 +21,13 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
+    let isTeacher = false;
+    if (isteacher === true){
+        if (secretcode!==SECRET_CODE){
+            return res.status(400).json({message:'Invalid teacher code!'});
+        }
+        isTeacher = true;
+    }
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -28,12 +36,12 @@ router.post('/', async (req, res) => {
     const newUser = new User({
       Fullname,
       email,
-      hashedpassword: hashedPassword, // Note the change from 'password' to 'hashedpassword'
-      isteacher,
+      hashedpassword: hashedPassword,
+      isteacher:isTeacher, 
       idno
     });
 
-    // Save the user
+
     await newUser.save();
 
     res.status(201).json({ message: 'User registered successfully' });
