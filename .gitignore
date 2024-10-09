@@ -1,1 +1,13 @@
 backend/node_modules/
+frontend/node_modules/
+
+# dependencies
+
+frontend/.pnp
+frontend/.pnp.js
+
+# testing
+/coverage
+
+# production
+frontend/build
