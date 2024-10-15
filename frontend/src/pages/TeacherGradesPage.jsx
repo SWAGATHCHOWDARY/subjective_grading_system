@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const TeacherGradesPage = () => {
   const [studentGrades, setStudentGrades] = useState([]);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   // Load all student grades
   useEffect(() => {
@@ -95,8 +95,8 @@ const TeacherGradesPage = () => {
         <p>No student submissions available yet.</p>
       )}
 
-      <button onClick={() => history.push('/teacher/dashboard')}>Back to Dashboard</button>
-      <button onClick={() => history.push('/logout')}>Logout</button>
+      <button onClick={() => navigate('/teacher/dashboard')}>Back to Dashboard</button>
+      <button onClick={() => navigate('/logout')}>Logout</button>
     </div>
   );
 };

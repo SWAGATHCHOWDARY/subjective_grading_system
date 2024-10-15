@@ -1,10 +1,10 @@
 // src/pages/Logout.jsx
 
 import React, { useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Logout = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Clear any user-related data from local storage or session
@@ -12,8 +12,8 @@ const Logout = () => {
     localStorage.removeItem('userType');
 
     // Redirect to login page after logging out
-    history.push('/login');
-  }, [history]);
+    navigate('/login');
+  }, [navigate]);
 
   return (
     <div className="logout-page">

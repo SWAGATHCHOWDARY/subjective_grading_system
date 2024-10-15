@@ -3,6 +3,7 @@ const User = require('../model/user');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { generateToken } = require('../utils/jwt');
+const cors = require('cors');
 
 
 router.post('/', async (req, res) => {
@@ -20,7 +21,8 @@ router.post('/', async (req, res) => {
 
     const payload = { email: user.email };
     const token = generateToken(payload);
-    res.status(200).json({ message: 'Login successful', token });
+    const userType = user.isteacher ? 'teacher':'student';
+    res.status(200).json({ message: 'Login successful', token ,userType});
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ message: 'Internal server error' });

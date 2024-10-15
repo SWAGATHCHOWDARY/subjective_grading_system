@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const TeacherDashboard = () => {
   const [studentGrades, setStudentGrades] = useState([]);
   const [file, setFile] = useState(null);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   // Load all student grades
   useEffect(() => {
@@ -35,7 +35,7 @@ const TeacherDashboard = () => {
     }
     const formData = new FormData();
     formData.append('file', file);
-    
+
     try {
       await axios.post('http://localhost:5000/api/teacher/upload-answer', formData);
       alert('Official answer uploaded successfully.');
@@ -122,7 +122,7 @@ const TeacherDashboard = () => {
         )}
       </div>
 
-      <button onClick={() => history.push('/logout')}>Logout</button>
+      <button onClick={() => navigate('/logout')}>Logout</button>
     </div>
   );
 };

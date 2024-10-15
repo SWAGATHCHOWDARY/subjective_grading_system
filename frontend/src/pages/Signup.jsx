@@ -1,7 +1,7 @@
 // src/pages/Signup.jsx
 
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Signup = () => {
@@ -12,7 +12,7 @@ const Signup = () => {
     userType: 'student', // Default to student
   });
   const [error, setError] = useState('');
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -25,7 +25,7 @@ const Signup = () => {
     e.preventDefault();
     try {
       await axios.post('http://localhost:5000/api/signup', formData);
-      history.push('/login');
+      navigate('/login');  // Redirect to login after successful signup
     } catch (err) {
       setError('Failed to create an account. Please try again.');
     }

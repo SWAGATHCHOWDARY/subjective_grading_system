@@ -2,13 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
   const [gradeDetails, setGradeDetails] = useState([]);
   const [file, setFile] = useState(null);
   const [statusMessage, setStatusMessage] = useState('');
-  const history = useHistory();
+  const navigate = useNavigate();
 
   // Load student grades
   useEffect(() => {
@@ -95,7 +95,7 @@ const StudentDashboard = () => {
         )}
       </div>
 
-      <button onClick={() => history.push('/logout')}>Logout</button>
+      <button onClick={() => navigate('/logout')}>Logout</button>
     </div>
   );
 };
