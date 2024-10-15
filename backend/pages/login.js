@@ -3,7 +3,6 @@ const User = require('../model/user');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { generateToken } = require('../utils/jwt');
-const cors = require('cors');
 
 
 router.post('/', async (req, res) => {
