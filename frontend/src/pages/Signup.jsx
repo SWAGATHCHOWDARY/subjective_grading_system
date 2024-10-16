@@ -1,5 +1,3 @@
-// src/pages/Signup.jsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -10,6 +8,8 @@ const Signup = () => {
     email: '',
     password: '',
     userType: 'student', // Default to student
+    idno: '', // ID Number field
+    secretcode: '' // Secret Code field for teachers only
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -24,7 +24,17 @@ const Signup = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/signup', formData);
+      // Prepare data to send
+      const requestData = {
+        Fullname: formData.fullName, 
+        email: formData.email,
+        password: formData.password,
+        isteacher: formData.userType === 'teacher', // Handle teacher logic
+        idno: formData.idno,
+        secretcode: formData.userType === 'teacher' ? formData.secretcode : undefined, // Send secretcode only if teacher
+      };
+
+      await axios.post('http://localhost:3000/signup', requestData);
       navigate('/login');  // Redirect to login after successful signup
     } catch (err) {
       setError('Failed to create an account. Please try again.');
@@ -69,6 +79,17 @@ const Signup = () => {
           />
         </div>
         <div className="form-group">
+          <label htmlFor="idno">ID Number</label>
+          <input
+            type="text"
+            id="idno"
+            name="idno"
+            value={formData.idno}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="form-group">
           <label htmlFor="userType">Account Type</label>
           <select
             id="userType"
@@ -80,6 +101,19 @@ const Signup = () => {
             <option value="teacher">Teacher</option>
           </select>
         </div>
+        {formData.userType === 'teacher' && (
+          <div className="form-group">
+            <label htmlFor="secretcode">Teacher Secret Code</label>
+            <input
+              type="text"
+              id="secretcode"
+              name="secretcode"
+              value={formData.secretcode}
+              onChange={handleChange}
+              required
+            />
+          </div>
+        )}
         {error && <p className="error">{error}</p>}
         <button type="submit">Signup</button>
       </form>
