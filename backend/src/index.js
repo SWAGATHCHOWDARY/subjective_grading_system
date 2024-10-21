@@ -1,10 +1,11 @@
-const express = require("express");
+const express = require('express');
 const mongoose = require('mongoose');
-const routes = require('../routes');
-const app = express();
+const routes = require('../routes'); // Import routes from the routes folder
 const cors = require('cors');
 
+const app = express();
 
+// MongoDB connection
 mongoose.connect('mongodb+srv://saiswagath:oXuYHolYF6ErPegd@cluster1.utkxd.mongodb.net/project_db', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -15,17 +16,22 @@ mongoose.connect('mongodb+srv://saiswagath:oXuYHolYF6ErPegd@cluster1.utkxd.mongo
 .catch((error) => {
     console.error('Error connecting to MongoDB Atlas:', error);
 });
-app.use(cors())
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }));
+
+// Middleware
+app.use(cors()); // Handle cross-origin requests
+app.use(express.json()); // Parse JSON payloads
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
+// Use routes
 app.use('/', routes);
 
-app.get('/',(req,res) => {
+// Default route for testing
+app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
+// Start the server
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
+    console.log(`Server is running on port ${PORT}`);
 });

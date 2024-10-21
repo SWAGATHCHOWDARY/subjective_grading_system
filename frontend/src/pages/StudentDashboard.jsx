@@ -1,101 +1,44 @@
-// src/pages/StudentDashboard.jsx
-
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import './studentDashboard.css'; 
 
 const StudentDashboard = () => {
-  const [gradeDetails, setGradeDetails] = useState([]);
-  const [file, setFile] = useState(null);
-  const [statusMessage, setStatusMessage] = useState('');
+  const [fullname,setFullname] = useState('');
   const navigate = useNavigate();
-
-  // Load student grades
+  
   useEffect(() => {
-    const fetchGrades = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/student/grades');
-        setGradeDetails(response.data);
-      } catch (error) {
-        console.error('Failed to fetch grades', error);
-      }
-    };
-    fetchGrades();
-  }, []);
-
-  // Handle file upload
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!file) {
-      setStatusMessage('Please select a file to upload.');
-      return;
+    const storedFullname = localStorage.getItem('fullname');
+    if (storedFullname){
+      setFullname(storedFullname);
     }
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    try {
-      setStatusMessage('Uploading...');
-      await axios.post('http://localhost:5000/api/student/upload', formData);
-      setStatusMessage('File uploaded successfully and under evaluation.');
-    } catch (error) {
-      setStatusMessage('Failed to upload file.');
-      console.error(error);
-    }
+  },[]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('fullname');
+    navigate('/logout');
   };
 
   return (
     <div className="student-dashboard">
-      <h2>Welcome, Student</h2>
+      <header className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold">Welcome, {fullname}</h2>
+        <button 
+          className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-700"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+      </header>
 
-      {/* File Upload Section */}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="fileUpload">Upload Answer File</label>
-          <input
-            type="file"
-            id="fileUpload"
-            onChange={handleFileChange}
-            accept=".pdf,.docx"
-          />
-        </div>
-        <button type="submit">Submit</button>
-      </form>
-      {statusMessage && <p>{statusMessage}</p>}
-
-      {/* Grades Overview */}
-      <div className="grades-overview">
-        <h3>Your Grades</h3>
-        {gradeDetails.length > 0 ? (
-          <table>
-            <thead>
-              <tr>
-                <th>Question</th>
-                <th>Grade</th>
-                <th>Reason</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {gradeDetails.map((grade) => (
-                <tr key={grade._id}>
-                  <td>{grade.question}</td>
-                  <td>{grade.grade}</td>
-                  <td>{grade.reason}</td>
-                  <td>{grade.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>No grades available yet.</p>
-        )}
+      <div className="flex justify-around mb-8">
+        <Link to="/submit-exam" className="bg-blue-500 text-white py-3 px-6 rounded hover:bg-blue-700">
+          Submit Exam
+        </Link>
+        <Link to="/view-grades" className="bg-green-500 text-white py-3 px-6 rounded hover:bg-green-700">
+          View Grades
+        </Link>
       </div>
-
-      <button onClick={() => navigate('/logout')}>Logout</button>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import './Login.css';  // Import the CSS file
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +13,11 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:3000/login', { email, password });
+      
+      // Store the token and full name in localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('fullname', response.data.fullname); // Save fullname for display
+      localStorage.setItem('userid',response.data.userid);
       // Navigate based on the user type
       if (response.data.userType === 'teacher') {
         navigate('/teacher/dashboard');

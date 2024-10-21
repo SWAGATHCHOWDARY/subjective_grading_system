@@ -1,0 +1,49 @@
+.evaluate-submissions {
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .evaluate-submissions table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .evaluate-submissions th, .evaluate-submissions td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .evaluate-submissions th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+  }
+  
+  .evaluate-submissions td {
+    text-align: center;
+  }
+  
+  .evaluate-submissions button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .evaluate-submissions .bg-blue-500 {
+    background-color: #3490dc;
+  }
+  
+  .evaluate-submissions .bg-green-500 {
+    background-color: #38c172;
+  }
+  
+  .evaluate-submissions .hover\:bg-blue-700:hover {
+    background-color: #2779bd;
+  }
+  
+  .evaluate-submissions .hover\:bg-green-700:hover {
+    background-color: #1f9d55;
+  }
+  

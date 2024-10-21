@@ -4,7 +4,6 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { generateToken } = require('../utils/jwt');
 
-
 router.post('/', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -17,11 +16,18 @@ router.post('/', async (req, res) => {
       return res.status(401).json({ message: 'Invalid password' });
     }
 
-
-    const payload = { email: user.email };
+    // Include full name in the JWT payload
+    const payload = { email: user.email, fullname: user.Fullname, isTeacher: user.isteacher };
     const token = generateToken(payload);
-    const userType = user.isteacher ? 'teacher':'student';
-    res.status(200).json({ message: 'Login successful', token ,userType});
+
+    const userType = user.isteacher ? 'teacher' : 'student';
+    res.status(200).json({ 
+      message: 'Login successful', 
+      token, 
+      userType, 
+      fullname: user.Fullname,
+      userid:user.idno // Send full name in response
+    });
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ message: 'Internal server error' });

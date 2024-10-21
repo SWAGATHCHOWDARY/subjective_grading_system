@@ -1,0 +1,53 @@
+/* StudentDashboard.css */
+
+.student-dashboard {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    background-color: #e3342f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #cc1f1a;
+  }
+  
+  .flex {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+  }
+  
+  a {
+    padding: 15px 30px;
+    text-decoration: none;
+    border-radius: 5px;
+    color: white;
+  }
+  
+  .bg-blue-500 {
+    background-color: #3490dc;
+  }
+  
+  .bg-green-500 {
+    background-color: #38c172;
+  }
+  
+  a:hover {
+    opacity: 0.9;
+  }
+  
