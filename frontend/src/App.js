@@ -9,6 +9,7 @@ import Logout from './pages/Logout';
 import TeacherDashboard from './pages/TeacherDashboard';
 import EvaluateSubmissions from './pages/Evaluatesubmissions';
 import ViewGrades from './pages/viewgrades';
+import ViewResults from './pages/ViewResults';
 function App() {
   return (
     <Router>
@@ -24,6 +25,7 @@ function App() {
         <Route path='/evaluate-submissions'element={<EvaluateSubmissions/>}/>
         <Route path="/" element={<Login />} /> {/* Default route */}
         <Route path = '/view-grades' element={<ViewGrades/>}/>
+        <Route path = '/view-results/:examId' element={<ViewResults/>}/>
       </Routes>
     </Router>
   );

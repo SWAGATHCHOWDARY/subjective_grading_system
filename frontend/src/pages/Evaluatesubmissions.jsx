@@ -32,11 +32,30 @@ const EvaluateSubmissions = () => {
     fetchExams();
   }, []);
 
-  const handleEvaluate = (examId) => {
-    navigate(`/evaluate-exam/${examId}`);
+  const handleEvaluate = async (examId) => {
+    try {
+      // Trigger evaluation for all students who took the test
+      const response = await fetch(`http://localhost:3000/evaluate/${examId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        alert('Evaluation completed successfully.');
+      } else {
+        alert('Evaluation failed.');
+      }
+    } catch (err) {
+      alert('Evaluation failed.');
+    }
   };
 
   const handleViewResults = (examId) => {
+    // Navigate to the ViewResults page with examId in the URL
     navigate(`/view-results/${examId}`);
   };
 

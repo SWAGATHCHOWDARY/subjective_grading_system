@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './UploadExam.css'; // Make sure this CSS file exists or remove if not needed
+import './UploadExam.css';
 
 const UploadExam = () => {
   const [examCode, setExamCode] = useState('');
-  const [questions, setQuestions] = useState([{ questionText: '', answerFile: null }]);
+  const [questions, setQuestions] = useState([{ questionText: '', answerText: '' }]);
   const [textbook, setTextbook] = useState(null);
   const [teacherId, setTeacherId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ const UploadExam = () => {
   }, []);
 
   const handleAddQuestion = () => {
-    setQuestions([...questions, { questionText: '', answerFile: null }]);
+    setQuestions([...questions, { questionText: '', answerText: '' }]);
   };
 
   const handleQuestionChange = (index, field, value) => {
@@ -41,28 +41,16 @@ const UploadExam = () => {
     formData.append('teacherId', teacherId);
   
     if (textbook) {
-      formData.append('textbook', textbook);
+      formData.append('textbook', textbook);  // Append the textbook file
     }
-  
-    // Log the questions before sending
-    console.log('Questions before sending:', questions);
-  
+
     // Append questions as a JSON string
-    const questionsData = questions.map(q => ({ questionText: q.questionText }));
+    const questionsData = questions.map(q => ({
+      questionText: q.questionText,
+      teacherAnswer: q.answerText,  // Send teacher's answer as part of each question
+    }));
     formData.append('questions', JSON.stringify(questionsData));
-  
-    // Log the formData
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-  
-    // Append answer files separately
-    questions.forEach((q, index) => {
-      if (q.answerFile) {
-        formData.append(`questions[${index}][answerFile]`, q.answerFile);
-      }
-    });
-  
+
     try {
       const response = await fetch('http://localhost:3000/upload-exam', {
         method: 'POST',
@@ -70,7 +58,6 @@ const UploadExam = () => {
       });
   
       const responseData = await response.json();
-      console.log('Response from server:', responseData);
   
       if (response.ok) {
         setLoading(false);
@@ -94,7 +81,7 @@ const UploadExam = () => {
       {loading && <p className="text-blue-500 mb-4">Uploading, please wait...</p>}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
+        <div className="form-group">
           <label htmlFor="examCode" className="block text-sm font-medium text-gray-700">
             Exam Code:
           </label>
@@ -108,7 +95,7 @@ const UploadExam = () => {
           />
         </div>
 
-        <div>
+        <div className="form-group">
           <label htmlFor="textbook" className="block text-sm font-medium text-gray-700">
             Upload Textbook (Optional):
           </label>
@@ -138,15 +125,12 @@ const UploadExam = () => {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               placeholder="Enter the question"
             />
-            <input
-              type="file"
-              onChange={(e) => handleQuestionChange(index, 'answerFile', e.target.files[0])}
-              className="mt-1 block w-full text-sm text-slate-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-violet-50 file:text-violet-700
-                hover:file:bg-violet-100"
+            <textarea
+              value={q.answerText}
+              onChange={(e) => handleQuestionChange(index, 'answerText', e.target.value)}
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              placeholder="Enter the model answer"
             />
           </div>
         ))}

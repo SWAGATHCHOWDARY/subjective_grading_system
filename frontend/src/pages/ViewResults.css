@@ -1,0 +1,101 @@
+.view-results-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #f8f8f8;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #333;
+  }
+  
+  td input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  button:hover {
+    opacity: 0.9;
+  }
+  
+  .bg-blue-500 {
+    background-color: #4299e1;
+  }
+  
+  .bg-green-500 {
+    background-color: #48bb78;
+  }
+  
+  .bg-red-500 {
+    background-color: #f56565;
+  }
+  
+  .text-white {
+    color: white;
+  }
+  
+  .text-red-500 {
+    color: #f56565;
+  }
+  
+  .text-green-500 {
+    color: #48bb78;
+  }
+  
+  .text-gray-500 {
+    color: #a0aec0;
+  }
+  
+  .py-3, .py-2 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+  
+  .px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  
+  .mt-6 {
+    margin-top: 1.5rem;
+  }
+  
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .hover\:bg-gray-50:hover {
+    background-color: #f7fafc;
+  }
+  
+  .transition-all {
+    transition: all 0.2s ease-in-out;
+  }
+  

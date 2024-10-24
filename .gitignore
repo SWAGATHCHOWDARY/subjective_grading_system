@@ -11,3 +11,5 @@ frontend/.pnp.js
 
 # production
 frontend/build
+
+.venv

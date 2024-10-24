@@ -6,17 +6,15 @@ const StudentAnswerSchema = new mongoose.Schema({
   answers: [
     {
       questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question', required: true },
-      studentAnswer: {
-        file: { type: mongoose.Schema.Types.ObjectId, ref: 'uploads.files' } // GridFS file ID
-      },
-      teacherAnswer: { type: String }, // Store teacher's answer as a string (text feedback)
-      grade: { type: String }, // Placeholder for grade
-      reasonForGrade: { type: String } // Placeholder for reason for grade
+      studentAnswer: { type: String, required: true },  // Student's answer as text
+      teacherAnswer: { type: String },  // Teacher's answer as text (feedback)
+      grade: { type: String },  // Placeholder for grade
+      reasonForGrade: { type: String }  // Placeholder for reason for grade
     }
   ],
   submittedAt: { type: Date, default: Date.now }
 });
 
-const StudentAnswer = mongoose.model('StudentAnswer', StudentAnswerSchema,'studentanswer');
+const StudentAnswer = mongoose.model('StudentAnswer', StudentAnswerSchema, 'studentanswer');
 
 module.exports = StudentAnswer;

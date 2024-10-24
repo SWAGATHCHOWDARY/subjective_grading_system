@@ -10,7 +10,8 @@ const questionSchema = new mongoose.Schema({
     required: true
   },
   teacherAnswer: {
-    file: { type: mongoose.Schema.Types.ObjectId, ref: 'uploads.files' } // Reference to GridFS for answer file
+    type: String,  // Storing the teacher's answer as text
+    required: true
   },
   teacher: {
     type: mongoose.Schema.Types.ObjectId,
@@ -19,5 +20,5 @@ const questionSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-const Question = mongoose.model('Question', questionSchema,'questions');
+const Question = mongoose.model('Question', questionSchema, 'questions');
 module.exports = Question;
