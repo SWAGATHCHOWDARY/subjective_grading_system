@@ -18,7 +18,7 @@ class GradingSystem:
         
         # Hugging Face API configuration
         self.api_url = "https://api-inference.huggingface.co/models/google/flan-t5-large"
-        self.headers = {"Authorization": f"Bearer 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"}
+        self.headers = {"Authorization": f"Bearer "}
         
         self.grade_thresholds = {
             'A': 0.85,
