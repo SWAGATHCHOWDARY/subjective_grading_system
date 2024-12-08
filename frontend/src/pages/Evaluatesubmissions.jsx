@@ -5,6 +5,13 @@ import './EvaluateSubmissions.css'; // Import CSS for styling
 const EvaluateSubmissions = () => {
   const [exams, setExams] = useState([]);  // State to store exam data (will be an array of exam objects)
   const [error, setError] = useState(null);
+  const [selectedExamId, setSelectedExamId] = useState(null); // Exam ID for the modal
+  const [criteria, setCriteria] = useState({
+    relevance: '',
+    completeness: '',
+    language_quality: '',
+  }); // State for evaluation criteria
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,18 +39,36 @@ const EvaluateSubmissions = () => {
     fetchExams();
   }, []);
 
-  const handleEvaluate = async (examId) => {
+  const handleEvaluateClick = (examId) => {
+    setSelectedExamId(examId); // Set the selected exam ID
+    setIsModalOpen(true); // Open the modal
+  };
+
+  const handleCriteriaChange = (e) => {
+    const { name, value } = e.target;
+    setCriteria((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmitEvaluation = async () => {
+    if (!criteria.relevance || !criteria.completeness || !criteria.language_quality) {
+      alert('Please fill in all criteria.');
+      return;
+    }
+
     try {
-      // Trigger evaluation for all students who took the test
-      const response = await fetch(`http://localhost:3000/evaluate/${examId}`, {
+      const response = await fetch(`http://localhost:3000/evaluate/${selectedExamId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify(criteria),
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok) {
         alert('Evaluation completed successfully.');
       } else {
@@ -51,6 +76,9 @@ const EvaluateSubmissions = () => {
       }
     } catch (err) {
       alert('Evaluation failed.');
+    } finally {
+      setIsModalOpen(false); // Close the modal
+      setCriteria({ relevance: '', completeness: '', language_quality: '' }); // Reset criteria
     }
   };
 
@@ -68,7 +96,7 @@ const EvaluateSubmissions = () => {
       <table className="table-auto w-full">
         <thead>
           <tr>
-            <th className="px-4 py-2">Exam Code</th>
+            <th className="px-4 py-2">Exam Name</th>
             <th className="px-4 py-2">Evaluate</th>
             <th className="px-4 py-2">View Results</th>
           </tr>
@@ -81,7 +109,7 @@ const EvaluateSubmissions = () => {
                 <td className="border px-4 py-2">
                   <button
                     className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
-                    onClick={() => handleEvaluate(exam._id)}
+                    onClick={() => handleEvaluateClick(exam._id)}
                   >
                     Evaluate
                   </button>
@@ -103,6 +131,59 @@ const EvaluateSubmissions = () => {
           )}
         </tbody>
       </table>
+
+      {/* Modal for criteria input */}
+      {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3 className="text-lg font-bold mb-4">Enter Evaluation Criteria</h3>
+            <div className="mb-2">
+              <label className="block mb-1">Relevance:</label>
+              <input
+                type="number"
+                name="relevance"
+                value={criteria.relevance}
+                onChange={handleCriteriaChange}
+                className="border px-2 py-1 w-full"
+              />
+            </div>
+            <div className="mb-2">
+              <label className="block mb-1">Completeness:</label>
+              <input
+                type="number"
+                name="completeness"
+                value={criteria.completeness}
+                onChange={handleCriteriaChange}
+                className="border px-2 py-1 w-full"
+              />
+            </div>
+            <div className="mb-2">
+              <label className="block mb-1">Language Quality:</label>
+              <input
+                type="number"
+                name="language_quality"
+                value={criteria.language_quality}
+                onChange={handleCriteriaChange}
+                className="border px-2 py-1 w-full"
+              />
+            </div>
+            <div className="flex justify-end mt-4">
+              <button
+                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-700 mr-2"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+                onClick={handleSubmitEvaluation}
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

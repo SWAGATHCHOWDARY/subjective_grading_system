@@ -83,7 +83,7 @@ const UploadExam = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="form-group">
           <label htmlFor="examCode" className="block text-sm font-medium text-gray-700">
-            Exam Code:
+            Exam Name:
           </label>
           <input
             type="text"

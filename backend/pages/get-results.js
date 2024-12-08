@@ -9,20 +9,24 @@ router.get('/:examId', async (req, res) => {
   const { examId } = req.params;
 
   try {
-    const test = await Test.findOne({_id: examId });
-  console.log("Test in backend!")
+    const test = await Test.findOne({ _id: examId });
     if (!test) {
       return res.status(404).json({ error: 'Test not found' });
     }
 
     const studentAnswers = await StudentAnswer.find({ testId: test._id });
 
+    // Use Promise.all to map over answers and fetch related student details
     const result = await Promise.all(studentAnswers.map(async (answer) => {
       const student = await User.findOne({ _id: answer.studentId });
+
+      const totalScore = answer.answers.reduce((sum, q) => sum + (q.score || 0), 0);
+
       return {
+        studentId: student._id, // Include studentId
         studentName: student.Fullname,
-        grade: answer.answers[0]?.grade || 'Not graded',
-        reasonForGrade: answer.answers[0]?.reasonForGrade || 'No reason provided'
+        totalScore, // Add totalScore to the response
+        reasonForGrade: answer.answers[0]?.reasonForGrade || 'No reason provided',
       };
     }));
 
@@ -32,5 +36,6 @@ router.get('/:examId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch results' });
   }
 });
+
 
 module.exports = router;
