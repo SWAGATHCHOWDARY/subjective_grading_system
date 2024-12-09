@@ -17,6 +17,11 @@ const questionSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // Reference to the teacher who created the question
     required: true
+  },
+  maxScore: {
+    type: Number, // Maximum possible score for this question
+    required: true,
+    default: 10 // Default maximum score, you can set it to any value you prefer
   }
 }, { timestamps: true });
 

@@ -167,7 +167,7 @@ import './UploadExam.css';
 
 const UploadExam = () => {
   const [examCode, setExamCode] = useState('');
-  const [questions, setQuestions] = useState([{ questionText: '', answerText: '', answerImage: null }]);
+  const [questions, setQuestions] = useState([{ questionText: '', answerText: '', answerImage: null, maxScore: '' }]);
   const [textbook, setTextbook] = useState(null);
   const [teacherId, setTeacherId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -193,6 +193,7 @@ const UploadExam = () => {
     );
     setQuestions(updatedQuestions);
   };
+  
 
   const handleImageUpload = async (index, file) => {
     const formData = new FormData();
@@ -224,29 +225,30 @@ const UploadExam = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+  
     const formData = new FormData();
     formData.append('examCode', examCode);
     formData.append('teacherId', teacherId);
-
+  
     if (textbook) {
-      formData.append('textbook', textbook); // Append the textbook file
+      formData.append('textbook', textbook);
     }
-
+  
     const questionsData = questions.map((q) => ({
       questionText: q.questionText,
       teacherAnswer: q.answerText,
+      maxScore: q.maxScore, // Include maxScore in the payload
     }));
     formData.append('questions', JSON.stringify(questionsData));
-
+  
     try {
       const response = await fetch('http://localhost:3000/upload-exam', {
         method: 'POST',
         body: formData,
       });
-
+  
       const responseData = await response.json();
-
+  
       if (response.ok) {
         setLoading(false);
         navigate('/teacher/dashboard');
@@ -301,37 +303,46 @@ const UploadExam = () => {
         </div>
 
         {questions.map((q, index) => (
-          <div key={index} className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Question {index + 1}:
-            </label>
-            <input
-              type="text"
-              value={q.questionText}
-              onChange={(e) => handleQuestionChange(index, 'questionText', e.target.value)}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              placeholder="Enter the question"
-            />
-            <textarea
-              value={q.answerText}
-              onChange={(e) => handleQuestionChange(index, 'answerText', e.target.value)}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              placeholder="Enter the model answer"
-            />
-            <input
-              type="file"
-              onChange={(e) => handleImageUpload(index, e.target.files[0])}
-              className="mt-1 block w-full text-sm text-slate-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-violet-50 file:text-violet-700
-                hover:file:bg-violet-100"
-            />
-          </div>
-        ))}
+        <div key={index} className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Question {index + 1}:
+          </label>
+          <input
+            type="text"
+            value={q.questionText}
+            onChange={(e) => handleQuestionChange(index, 'questionText', e.target.value)}
+            required
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            placeholder="Enter the question"
+          />
+          <textarea
+            value={q.answerText}
+            onChange={(e) => handleQuestionChange(index, 'answerText', e.target.value)}
+            required
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            placeholder="Enter the model answer"
+          />
+          <input
+            type="number"
+            value={q.maxScore}
+            onChange={(e) => handleQuestionChange(index, 'maxScore', e.target.value)}
+            required
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            placeholder="Enter maximum score for this question"
+          />
+          <input
+            type="file"
+            onChange={(e) => handleImageUpload(index, e.target.files[0])}
+            className="mt-1 block w-full text-sm text-slate-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-full file:border-0
+              file:text-sm file:font-semibold
+              file:bg-violet-50 file:text-violet-700
+              hover:file:bg-violet-100"
+          />
+        </div>
+      ))}
+
 
         <button
           type="button"

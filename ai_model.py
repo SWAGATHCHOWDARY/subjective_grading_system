@@ -124,7 +124,7 @@ class GradingSystem:
             question = data['question']
             student_answer = data['studentAnswer']
             teacher_answer = data['teacherAnswer']
-
+            max_score = data['MaximumMarks']
             # Extract textbook content and find relevant context
             textbook_content = self.extract_text_from_pdf(pdf_path)
             context = self.find_relevant_context(textbook_content, question)
@@ -144,7 +144,8 @@ class GradingSystem:
             # Calculate final score
             score = (
                 relevance * 0.4 + completeness * 0.4 + language_quality * 0.2
-            ) * 100
+            ) * max_score
+
 
             # Generate feedback using Vertex AI Chat
             feedback = self.generate_feedback_with_ai(student_answer, teacher_answer, score, context)
@@ -179,7 +180,7 @@ def evaluate():
         data = request.get_json()
 
         # Validate required fields
-        required_fields = ['studentAnswer', 'teacherAnswer', 'question', 'referencePDF']
+        required_fields = ['studentAnswer', 'teacherAnswer', 'question', 'referencePDF','maxmarks']
         #required_fields = ['studentAnswer', 'teacherAnswer', 'question']        
         for field in required_fields:
             if field not in data:
@@ -189,6 +190,7 @@ def evaluate():
         teacher_answer = data['teacherAnswer']
         question = data['question']
         reference_pdf = data['referencePDF']
+        maximummarks = data['maxmarks']
 
         # Ensure reference PDF exists
         if not os.path.exists(reference_pdf):
@@ -200,6 +202,7 @@ def evaluate():
             "question": question,
             "studentAnswer": student_answer,
             "teacherAnswer": teacher_answer,
+            "MaximumMarks":maximummarks,
         }
 
         # Call the GradingSystem's evaluation method

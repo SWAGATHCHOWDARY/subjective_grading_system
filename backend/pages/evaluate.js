@@ -214,6 +214,7 @@ router.post('/:examId', async (req, res) => {
           studentAnswer: answer.studentAnswer,
           teacherAnswer: question.teacherAnswer,
           question: question.questionText,
+          maxmarks : question.maxScore,
           referencePDF: textbookPath,
           criteria: { relevance, completeness, language_quality },
         };
