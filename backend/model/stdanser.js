@@ -8,11 +8,12 @@ const StudentAnswerSchema = new mongoose.Schema({
       questionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Question', required: true },
       studentAnswer: { type: String, required: true },  // Student's answer
       teacherAnswer: { type: String },  // Teacher's answer for reference
-      score: { type: Number, default: 0 },  // Individual question score
+      score: { type: Number, default: '0' },  // Individual question score
       reasonForGrade: { type: String }  // Reason for score
     }
   ],
-  totalScore: { type: Number, default: 0 },  // Total score for the exam
+  totalScore: { type: Number, default: 0 },
+  overallfeedback : {type : String},  
   submittedAt: { type: Date, default: Date.now }
 });
 

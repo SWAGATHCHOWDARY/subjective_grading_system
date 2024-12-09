@@ -61,7 +61,7 @@ router.post('/submit-exam', async (req, res) => {
         questionId: question._id,
         studentAnswer: answer.studentAnswer,  // Ensure it's a text-based student answer
         teacherAnswer: question.teacherAnswer || '',
-        grade: 'Pending',
+        score: '0',
         reasonForGrade: 'Pending'
       };
     });

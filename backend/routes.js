@@ -10,7 +10,8 @@ const examRoutes = require('./pages/examroutes');
 const getResults = require('./pages/get-results');
 const updateGrades = require('./pages/update-grades');
 const evaluate = require('./pages/evaluate');
-const studentAnswers = require('./pages/individual-answers'); // Import the new route
+const studentAnswers = require('./pages/individual-answers'); // Import student answers route
+const testDetails = require('./pages/testdetails'); // Import test-details route
 
 // Home route
 router.get('/', (req, res) => {
@@ -27,6 +28,7 @@ router.use('/update-grades', updateGrades);
 router.use('/student-grades', studentgrades);
 router.use('/upload-exam', uploadExam);
 router.use('/student-answers', studentAnswers); // Register the student answers route
+router.use('/test-details', testDetails); // Register the test-details route
 router.use('/', getexams);
 
 module.exports = router;

@@ -26,7 +26,7 @@ router.get('/:examId', async (req, res) => {
         studentId: student._id, // Include studentId
         studentName: student.Fullname,
         totalScore, // Add totalScore to the response
-        reasonForGrade: answer.answers[0]?.reasonForGrade || 'No reason provided',
+        overallfeedback: answer.overallfeedback || 'No reason provided',
       };
     }));
 

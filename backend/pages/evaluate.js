@@ -52,7 +52,7 @@ router.post('/:examId', async (req, res) => {
           studentAnswer: answer.studentAnswer,
           teacherAnswer: question.teacherAnswer,
           question: question.questionText,
-          referencePDF: textbook,  // Assuming this is a path or ID to the textbook
+          referencePDF: 'backend\\uploads\\1729665221880-textbook.pdf',  // Assuming this is a path or ID to the textbook
           criteria: { relevance, completeness, language_quality }, // Include criteria
         };
 
@@ -63,8 +63,8 @@ router.post('/:examId', async (req, res) => {
         console.log("AI Model Response:", aiResponse);
 
         // Update student's answer with the grade and reason
-        answer.grade = aiResponse.grade;
-        answer.reasonForGrade = aiResponse.reason;
+        answer.score = aiResponse.score;
+        answer.reasonForGrade = aiResponse.feedback;
 
         await studentAnswer.save();  // Save the updated student answer
         console.log("Updated Student Answer:", answer);

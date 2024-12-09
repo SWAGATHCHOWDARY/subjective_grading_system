@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import './ViewResults.css'; // Import the CSS file for styling
+import './ViewResults.css';
 
 const ViewResults = () => {
   const [students, setStudents] = useState([]);
@@ -9,7 +9,7 @@ const ViewResults = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [saveStatus, setSaveStatus] = useState('');
-  const { examId } = useParams(); // Retrieve examId from the route params
+  const { examId } = useParams(); // Retrieve examId from route params
   const navigate = useNavigate();
 
   // Fetch results on component mount
@@ -55,6 +55,7 @@ const ViewResults = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
         setSelectedStudentAnswers({ ...data, studentId }); // Include studentId for updates
         setShowModal(true); // Show modal with fetched data
       } else {
@@ -72,6 +73,14 @@ const ViewResults = () => {
     setSelectedStudentAnswers({
       ...selectedStudentAnswers,
       answers: updatedAnswers,
+    });
+  };
+
+  // Handle overall feedback change
+  const handleOverallFeedbackChange = (value) => {
+    setSelectedStudentAnswers({
+      ...selectedStudentAnswers,
+      overallfeedback: value,
     });
   };
 
@@ -96,7 +105,8 @@ const ViewResults = () => {
           },
           body: JSON.stringify({
             answers: selectedStudentAnswers.answers,
-            totalScore: updatedTotalScore, // Send updated total score
+            totalScore: updatedTotalScore,
+            overallfeedback: selectedStudentAnswers.overallfeedback, // Send updated feedback
           }),
         }
       );
@@ -105,11 +115,15 @@ const ViewResults = () => {
         setSaveStatus('Changes saved successfully!');
         setShowModal(false);
 
-        // Update main table with the new total score
+        // Update main table with the new total score and feedback
         setStudents((prev) =>
           prev.map((student) =>
             student.studentId === selectedStudentAnswers.studentId
-              ? { ...student, totalScore: updatedTotalScore }
+              ? {
+                  ...student,
+                  totalScore: updatedTotalScore,
+                  overallfeedback: selectedStudentAnswers.overallfeedback,
+                }
               : student
           )
         );
@@ -143,7 +157,7 @@ const ViewResults = () => {
           {showModal && selectedStudentAnswers && (
             <div className="modal">
               <div className="modal-content">
-                <h2 className="text-2xl font-bold mb-4">Edit Questions and Answers</h2>
+                <h2 className="text-2xl font-bold mb-4">Edit Scores and Feedback</h2>
                 <ul>
                   {selectedStudentAnswers.answers.map((answer, index) => (
                     <li key={index} className="mb-4">
@@ -175,6 +189,14 @@ const ViewResults = () => {
                     </li>
                   ))}
                 </ul>
+                <label>
+                  <strong>Overall Feedback:</strong>{' '}
+                  <textarea
+                    value={selectedStudentAnswers.overallfeedback || ''}
+                    onChange={(e) => handleOverallFeedbackChange(e.target.value)}
+                    className="border border-gray-300 p-2 rounded w-full"
+                  />
+                </label>
                 <button
                   onClick={saveModalChanges}
                   className="bg-green-500 text-white py-2 px-4 mt-4 rounded hover:bg-green-700 transition-all"
@@ -196,7 +218,7 @@ const ViewResults = () => {
               <tr className="bg-gray-100">
                 <th className="py-3 px-6 border-b-2 text-left text-gray-600">Student Name</th>
                 <th className="py-3 px-6 border-b-2 text-left text-gray-600">Final Score</th>
-                <th className="py-3 px-6 border-b-2 text-left text-gray-600">Reason for Grade</th>
+                <th className="py-3 px-6 border-b-2 text-left text-gray-600">Overall Feedback</th>
               </tr>
             </thead>
             <tbody>
@@ -210,7 +232,7 @@ const ViewResults = () => {
                       {student.studentName}
                     </td>
                     <td className="py-3 px-6 border-b">{student.totalScore}</td>
-                    <td className="py-3 px-6 border-b">{student.reasonForGrade}</td>
+                    <td className="py-3 px-6 border-b">{student.overallfeedback}</td>
                   </tr>
                 ))
               ) : (

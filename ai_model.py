@@ -1,154 +1,205 @@
 from flask import Flask, request, jsonify
-from sentence_transformers import SentenceTransformer
-import requests
-import numpy as np
-from typing import Dict, Tuple
+from flask_cors import CORS
 import os
-from dotenv import load_dotenv
+from google.cloud import vision, language_v1
+from google.cloud import aiplatform_v1 as aiplatform
+import vertexai
+from vertexai.generative_models import GenerativeModel, ChatSession
+import PyPDF2
+from sentence_transformers import SentenceTransformer
+import numpy as np
 
-# Load environment variables
-load_dotenv()
-
+# Initialize Flask app
 app = Flask(__name__)
+CORS(app)  # Allow Cross-Origin Resource Sharing for API access from other domains
+
 
 class GradingSystem:
-    def __init__(self):
-        # Initialize the BERT model for similarity scoring
+    def __init__(self, vision_credentials, nlp_credentials, aiplatform_credentials, project_id, location="us-central1"):
+        """Initialize the GradingSystem with APIs and credentials."""
+        self.vision_credentials = vision_credentials
+        self.nlp_credentials = nlp_credentials
+        self.aiplatform_credentials = aiplatform_credentials
+        self.project_id = project_id
+        self.location = location
+
+        # Initialize Vision and NLP API Clients
+        self.vision_client = vision.ImageAnnotatorClient.from_service_account_file(self.vision_credentials)
+        self.nlp_client = language_v1.LanguageServiceClient.from_service_account_file(self.nlp_credentials)
+
+        # Set environment variable for AI Platform (Vertex AI)
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = self.aiplatform_credentials
+
+        # Initialize Vertex AI (Generative Models)
+        vertexai.init(project=self.project_id, location=self.location)
+        self.chat_model = GenerativeModel("gemini-1.5-flash-002")
+
+        # Initialize a SentenceTransformer for text embedding
         self.sentence_model = SentenceTransformer('paraphrase-multilingual-mpnet-base-v2')
-        
-        # Hugging Face API configuration
-        self.api_url = "https://api-inference.huggingface.co/models/google/flan-t5-large"
-        self.headers = {"Authorization": f"Bearer "}
-        
-        self.grade_thresholds = {
-            'A': 0.85,
-            'B': 0.70,
-            'C': 0.55,
-            'D': 0.40,
-            'F': 0.0
-        }
 
-    def calculate_similarity(self, student_answer: str, reference_text: str) -> float:
-        """Calculate semantic similarity using BERT embeddings"""
+        # Set up API client options for aiplatform_v1
+        self.api_endpoint = f"{self.location}-aiplatform.googleapis.com"
+        self.client_options = {"api_endpoint": self.api_endpoint}
+        self.model_client = aiplatform.services.model_service.ModelServiceClient(client_options=self.client_options)
+
+    def extract_text_from_pdf(self, pdf_path: str) -> str:
+        """Extract text from a PDF file."""
         try:
-            # Generate embeddings
-            student_embedding = self.sentence_model.encode(student_answer)
-            reference_embedding = self.sentence_model.encode(reference_text)
-            
-            # Calculate cosine similarity
-            similarity = np.dot(student_embedding, reference_embedding) / \
-                        (np.linalg.norm(student_embedding) * np.linalg.norm(reference_embedding))
-            
-            return float(similarity)
+            with open(pdf_path, 'rb') as pdf_file:
+                reader = PyPDF2.PdfReader(pdf_file)
+                text = ''
+                for page in reader.pages:
+                    text += page.extract_text()
+            return text
         except Exception as e:
-            print(f"Error in similarity calculation: {e}")
-            return 0.0
+            raise Exception(f"Error reading PDF: {e}")
 
-    def get_model_evaluation(self, question: str, student_answer: str, 
-                           teacher_answer: str, similarity_score: float) -> Tuple[str, str]:
-        """Get evaluation using Hugging Face's API"""
+    def find_relevant_context(self, textbook: str, question: str, top_k: int = 3) -> str:
+        """Retrieve the most relevant sections from the textbook for the given question."""
         try:
-            prompt = f"""Task: Grade this student answer.
-            Question: {question}
-            Student Answer: {student_answer}
-            Reference Answer: {teacher_answer}
-            Similarity Score: {similarity_score:.2f}
+            sections = textbook.split('\n\n')  # Split textbook into sections
+            question_embedding = self.sentence_model.encode(question)
+            section_embeddings = self.sentence_model.encode(sections)
 
-            Provide a letter grade (A/B/C/D/F) and a brief reason.
-            Format: GRADE: (letter) REASON: (1-2 sentences)
-            """
-
-            # Make API call to Hugging Face
-            response = requests.post(
-                self.api_url,
-                headers=self.headers,
-                json={"inputs": prompt, "parameters": {"max_length": 100}}
+            # Compute cosine similarity
+            similarities = np.dot(section_embeddings, question_embedding) / (
+                np.linalg.norm(section_embeddings, axis=1) * np.linalg.norm(question_embedding)
             )
-            
-            if response.status_code != 200:
-                raise Exception(f"API call failed with status code: {response.status_code}")
 
-            # Parse response
-            response_text = response.json()[0]['generated_text']
-            try:
-                grade = response_text.split('GRADE:')[1].split('REASON:')[0].strip()
-                reason = response_text.split('REASON:')[1].strip()
-            except:
-                # Fallback grading based on similarity score
-                grade = self.get_grade_from_similarity(similarity_score)
-                reason = "Grade based on similarity score due to evaluation parsing error."
-            
-            return grade, reason
-            
+            # Get top_k most relevant sections
+            top_indices = np.argsort(similarities)[-top_k:][::-1]
+            relevant_sections = [sections[i] for i in top_indices]
+            return "\n\n".join(relevant_sections)
         except Exception as e:
-            print(f"Error in model evaluation: {e}")
-            grade = self.get_grade_from_similarity(similarity_score)
-            return grade, f"Grade based on similarity score. Technical error: {str(e)}"
+            raise Exception(f"Error finding relevant context: {e}")
 
-    def get_grade_from_similarity(self, score: float) -> str:
-        """Convert similarity score to letter grade"""
-        for grade, threshold in self.grade_thresholds.items():
-            if score >= threshold:
-                return grade
-        return 'F'
+    def extract_keywords(self, text: str) -> set:
+        """Extract keywords using NLP API."""
+        document = language_v1.Document(content=text, type_=language_v1.Document.Type.PLAIN_TEXT)
+        response = self.nlp_client.analyze_entities(document=document)
+        return {entity.name.lower() for entity in response.entities}
 
-    def evaluate_answer(self, data: Dict) -> Dict:
-        """Main evaluation function"""
+    def generate_feedback_with_ai(self, student_answer: str, teacher_answer: str, score: float, context: str) -> str:
+    #def generate_feedback_with_ai(self, student_answer: str, teacher_answer: str, score: float) -> str:
+
+        """Generate concise feedback using Vertex AI."""
+        chat_session = self.chat_model.start_chat()
+        prompt = f"""
+        You are an intelligent teaching assistant. Evaluate the following student's answer concisely.
+        Context from the textbook:
+        {context}
+
+        Teacher's Answer: {teacher_answer}
+        Student's Answer: {student_answer}
+        Score: {score}
+
+        Provide:
+        1. Key strengths of the student's answer.
+        2. Key weaknesses and areas for improvement.
+        3. A brief, encouraging remark to motivate the student.
+
+        Ensure the feedback is summary limited to 30 words.
+        """
+        text_response = []
+        responses = chat_session.send_message(prompt, stream=True)
+        for chunk in responses:
+            text_response.append(chunk.text)
+        return "".join(text_response)
+
+    def evaluate_answer(self, data: dict) -> dict:
+        """Main evaluation function with textbook reference."""
         try:
-            # Extract data
+            pdf_path = data['textbook']
+            question = data['question']
             student_answer = data['studentAnswer']
             teacher_answer = data['teacherAnswer']
-            question = data['question']
-            
-            # Calculate similarity
-            similarity_score = self.calculate_similarity(student_answer, teacher_answer)
-            
-            # Get model evaluation
-            grade, reason = self.get_model_evaluation(
-                question, student_answer, teacher_answer, similarity_score
-            )
-            
-            # Calculate additional metrics
-            response = {
-                'grade': grade,
-                'reason': reason
-            }
-            
-            return response
-            
-        except Exception as e:
-            print(f"Error in evaluation: {e}")
+
+            # Extract textbook content and find relevant context
+            textbook_content = self.extract_text_from_pdf(pdf_path)
+            context = self.find_relevant_context(textbook_content, question)
+
+            # Extract keywords
+            student_keywords = self.extract_keywords(student_answer)
+            teacher_keywords = self.extract_keywords(teacher_answer)
+
+            # Calculate relevance and completeness
+            matching_keywords = student_keywords.intersection(teacher_keywords)
+            relevance = len(matching_keywords) / len(teacher_keywords) if teacher_keywords else 0.0
+            completeness = len(student_keywords) / len(teacher_keywords) if teacher_keywords else 0.0
+
+            # Language quality (simplistic token count)
+            language_quality = min(1.0, len(student_answer.split()) / 50)
+
+            # Calculate final score
+            score = (
+                relevance * 0.4 + completeness * 0.4 + language_quality * 0.2
+            ) * 100
+
+            # Generate feedback using Vertex AI Chat
+            feedback = self.generate_feedback_with_ai(student_answer, teacher_answer, score, context)
+            #feedback = self.generate_feedback_with_ai(student_answer, teacher_answer, score)
+
             return {
-                'grade': 'F',
-                'reason': f'Error occurred during evaluation: {str(e)}'
+                "score": round(score, 2),
+                "relevance": round(relevance * 100, 2),
+                "completeness": round(completeness * 100, 2),
+                "language_quality": round(language_quality * 100, 2),
+                "feedback": feedback
             }
+        except Exception as e:
+            return {"score": 0.0, "feedback": {"error": f"Error during evaluation: {str(e)}"}}
 
-    def _calculate_keyword_match(self, student_answer: str, teacher_answer: str) -> float:
-        """Calculate the ratio of matching keywords"""
-        student_words = set(student_answer.lower().split())
-        teacher_words = set(teacher_answer.lower().split())
-        matching_words = student_words.intersection(teacher_words)
-        return len(matching_words) / len(teacher_words)
 
-# Initialize grading system
-grader = GradingSystem()
+# Initialize the GradingSystem
+grading_system = GradingSystem(
+    vision_credentials="ttt\\tata-class-edge-5f76-1104c5682b3e.json",
+    nlp_credentials="ttt\\naturallanguage api\\tata-class-edge-5f76-bbf5b5c5c5d9.json",
+    aiplatform_credentials="ttt\\aiplatform api\\tata-class-edge-5f76-d642d656d947.json",
+    #vertex_ai_credentials = "ttt\tata-class-edge-5f76-1104c5682b3e.json"
+    project_id="tata-class-edge-5f76",
+    location="us-central1"
+)
+
 
 @app.route('/evaluate', methods=['POST'])
 def evaluate():
     try:
-        data = request.json
-        if not all(key in data for key in ['studentAnswer', 'teacherAnswer', 'question']):
-            return jsonify({
-                'error': 'Missing required fields'
-            }), 400
-            
-        result = grader.evaluate_answer(data)
-        return jsonify(result)
-        
-    except Exception as e:
-        return jsonify({
-            'error': str(e)
-        }), 500
+        # Extract JSON payload from the request
+        data = request.get_json()
 
+        # Validate required fields
+        required_fields = ['studentAnswer', 'teacherAnswer', 'question', 'referencePDF']
+        #required_fields = ['studentAnswer', 'teacherAnswer', 'question']        
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"'{field}' is required in the request"}), 400
+
+        student_answer = data['studentAnswer']
+        teacher_answer = data['teacherAnswer']
+        question = data['question']
+        reference_pdf = data['referencePDF']
+
+        # Ensure reference PDF exists
+        if not os.path.exists(reference_pdf):
+            return jsonify({"error": "Reference PDF not found at the specified path"}), 404
+
+        # Prepare data for evaluation
+        evaluation_data = {
+            "textbook": reference_pdf,
+            "question": question,
+            "studentAnswer": student_answer,
+            "teacherAnswer": teacher_answer,
+        }
+
+        # Call the GradingSystem's evaluation method
+        result = grading_system.evaluate_answer(evaluation_data)
+        print(result)
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# Run the Flask app
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

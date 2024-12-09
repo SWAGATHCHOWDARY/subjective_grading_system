@@ -24,7 +24,10 @@ router.get('/:examId/:studentId', async (req, res) => {
       return res.status(404).json({ message: 'No answers found for this student.' });
     }
 
-    res.status(200).json(studentAnswers);
+    res.status(200).json({
+      answers: studentAnswers.answers,
+      overallfeedback: studentAnswers.overallfeedback || '', // Include overall feedback
+    });
   } catch (error) {
     console.error('Error fetching student answers:', error);
     res.status(500).json({ message: 'Error fetching student answers', error });
@@ -34,10 +37,9 @@ router.get('/:examId/:studentId', async (req, res) => {
 // Route to update student answers for a specific test
 router.put('/:examId/:studentId', async (req, res) => {
   const { examId, studentId } = req.params;
-  const { answers } = req.body; // Updated answers from the frontend
+  const { answers, totalScore, overallfeedback } = req.body;
 
   try {
-    // Find the student answers for the specified test
     const studentAnswer = await StudentAnswer.findOne({
       testId: examId,
       studentId: studentId,
@@ -47,16 +49,20 @@ router.put('/:examId/:studentId', async (req, res) => {
       return res.status(404).json({ message: 'Student answers not found.' });
     }
 
-    // Update the answers
-    studentAnswer.answers = answers;
+    console.log('Before Update:', studentAnswer);
+    console.log('Update Payload:', req.body);
 
-    // Save the updated document
+    studentAnswer.answers = answers;
+    studentAnswer.totalScore = totalScore;
+    studentAnswer.overallfeedback = overallfeedback;
+
     await studentAnswer.save();
 
-    res.status(200).json({ message: 'Answers updated successfully.' });
+    console.log('After Update:', studentAnswer);
+    res.status(200).json({ message: 'Answers and feedback updated successfully.' });
   } catch (error) {
     console.error('Error updating student answers:', error);
-    res.status(500).json({ message: 'Error updating student answers.', error });
+    res.status(500).json({ message: 'Error updating student answers and feedback.', error });
   }
 });
 
