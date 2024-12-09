@@ -53,7 +53,18 @@ class GradingSystem:
             return text
         except Exception as e:
             raise Exception(f"Error reading PDF: {e}")
-
+        
+    def perform_ocr(self, image_path: str) -> str:
+        """Perform OCR using Vision API."""
+        with open(image_path, "rb") as image_file:
+            content = image_file.read()
+        image = vision.Image(content=content)
+        response = self.vision_client.text_detection(image=image)
+        if response.error.message:
+            raise Exception(f"Vision API Error: {response.error.message}")
+        texts = response.text_annotations
+        return texts[0].description if texts else ""
+    
     def find_relevant_context(self, textbook: str, question: str, top_k: int = 3) -> str:
         """Retrieve the most relevant sections from the textbook for the given question."""
         try:
@@ -198,7 +209,31 @@ def evaluate():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/perform-ocr', methods=['POST'])
+def perform_ocr_endpoint():
+    try:
+        # Check if a file is provided in the request
+        if 'image' not in request.files:
+            return jsonify({"error": "Image file is required"}), 400
 
+        image_file = request.files['image']
+
+        # Save the image temporarily
+        temp_image_path = f"/tmp/{image_file.filename}"
+        image_file.save(temp_image_path)
+
+        # Perform OCR using GradingSystem
+        extracted_text = grading_system.perform_ocr(temp_image_path)
+
+        # Delete the temporary file
+        os.remove(temp_image_path)
+
+        # Return the extracted text as a JSON response
+        return jsonify({"extracted_text": extracted_text}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Run the Flask app
 if __name__ == '__main__':

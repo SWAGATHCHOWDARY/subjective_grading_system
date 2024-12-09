@@ -4,6 +4,7 @@ const axios = require('axios');
 const sendToAIModel = async (data) => {
   try {
     // Call the Flask API for AI evaluation
+    console.log(data)
     const response = await axios.post('http://localhost:5000/evaluate', data);  // Flask AI service endpoint
     
     // Return the grade and reason from the AI model

@@ -12,7 +12,7 @@ const updateGrades = require('./pages/update-grades');
 const evaluate = require('./pages/evaluate');
 const studentAnswers = require('./pages/individual-answers'); // Import student answers route
 const testDetails = require('./pages/testdetails'); // Import test-details route
-
+const performOCR = require('./pages/ocr-upload');
 // Home route
 router.get('/', (req, res) => {
   res.send('Welcome to the home page!');
@@ -22,6 +22,7 @@ router.get('/', (req, res) => {
 router.use('/evaluate', evaluate);
 router.use('/signup', signUpPage);
 router.use('/login', loginPage);
+router.use('/perform-ocr',performOCR );
 router.use('/exam', examRoutes);
 router.use('/view-results', getResults);
 router.use('/update-grades', updateGrades);
