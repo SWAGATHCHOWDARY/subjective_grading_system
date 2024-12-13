@@ -67,9 +67,3 @@ Ensure you have the following installed on your system:
 
 Once both the backend and frontend are running, open your browser and navigate to the application. You should see the login page.
 
-## Additional Notes
-
-- Ensure that the backend and frontend are running simultaneously for the application to function correctly.
-- For any issues, check the logs in the terminal for potential error messages.
-
-Enjoy using the application!
